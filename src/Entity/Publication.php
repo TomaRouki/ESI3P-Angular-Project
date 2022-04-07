@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\PublicationRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PublicationRepository::class)]
@@ -28,6 +30,14 @@ class Publication
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'publications')]
     private $userspe;
+
+    #[ORM\ManyToMany(targetEntity: Traduction::class, mappedBy: 'publication')]
+    private $traductions;
+
+    public function __construct()
+    {
+        $this->traductions = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -90,6 +100,33 @@ class Publication
     public function setUserspe(?User $userspe): self
     {
         $this->userspe = $userspe;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Traduction>
+     */
+    public function getTraductions(): Collection
+    {
+        return $this->traductions;
+    }
+
+    public function addTraduction(Traduction $traduction): self
+    {
+        if (!$this->traductions->contains($traduction)) {
+            $this->traductions[] = $traduction;
+            $traduction->addPublication($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTraduction(Traduction $traduction): self
+    {
+        if ($this->traductions->removeElement($traduction)) {
+            $traduction->removePublication($this);
+        }
 
         return $this;
     }
